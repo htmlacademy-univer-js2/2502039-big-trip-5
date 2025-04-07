@@ -124,4 +124,8 @@ const mockPoints = [
   },
 ];
 
-export {mockPoints};
+function getShufflePoints(){
+  return mockPoints;
+}
+
+export {getShufflePoints};

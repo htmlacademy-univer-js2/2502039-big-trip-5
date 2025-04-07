@@ -1,7 +1,7 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import {createElement} from '../render.js';
 import { capitalizeString, getDurationTime, humanizeDate } from '../utls.js';
 
-function createPointsTemplate(pointModel,offerModel,destinationModel){
+function createPointsTemplate(pointModel,iterator){
   const {
     base_price: price,
     date_from: dateFrom,
@@ -10,13 +10,13 @@ function createPointsTemplate(pointModel,offerModel,destinationModel){
     is_favorite: isFavorite,
     offers: offersId,
     type
-  } = pointModel;
+  } = pointModel.points[iterator];
 
   const pointOffers = [];
   for(const offerId of offersId){
-    pointOffers.push(offerModel.getOfferById(type,offerId));
+    pointOffers.push(pointModel.getOfferById(type,offerId));
   }
-  const {name} = destinationModel.getDestinationById(destinationId);
+  const {name} = pointModel.getDestinationById(destinationId);
   const date = humanizeDate(dateFrom);
   return `
             <li class="trip-events__item">
@@ -61,22 +61,25 @@ function createPointsTemplate(pointModel,offerModel,destinationModel){
 `;
 }
 
-export default class Point extends AbstractView{
-  #pointModel;
-  #offerModel;
-  #destinationModel;
-  #rollupButton;
+export default class Point{
 
-  constructor(pointModel,offerModel,destinationModel,onButtonClick){
-    super();
-    this.#pointModel = pointModel;
-    this.#offerModel = offerModel;
-    this.#destinationModel = destinationModel;
-    this.#rollupButton = this.element.querySelector('.event__rollup-btn');
-    this.#rollupButton.addEventListener('click',onButtonClick);
+  constructor(model,i){
+    this.pointModel = model;
+    this.iterator = i;
   }
 
-  get template(){
-    return createPointsTemplate(this.#pointModel,this.#offerModel,this.#destinationModel);
+  getTemplate(){
+    return createPointsTemplate(this.pointModel,this.iterator);
+  }
+
+  getElement(){
+    if(!this.element){
+      this.element = createElement(this.getTemplate());
+    }
+    return this.element;
+  }
+
+  removeElement(){
+    this.element = null;
   }
 }
