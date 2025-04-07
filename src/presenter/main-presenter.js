@@ -95,4 +95,3 @@ export default class MainPresenter{
     return this.#container;
   }
 }
-

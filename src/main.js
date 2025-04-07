@@ -14,4 +14,3 @@ render(new Sort(),siteBodySortElement);
 const mainPresenter = new MainPresenter(siteBodySortElement,
   new PointModel(),new OfferModel(), new DestinationModel());
 mainPresenter.init();
-
