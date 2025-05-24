@@ -1,22 +1,22 @@
-import {createElement} from '../render.js';
-import { capitalizeString, getDurationTime, humanizeDate } from '../utls.js';
+import AbstractView from '../framework/view/abstract-view.js';
+import { capitalizeString, getDurationTime, humanizeDate } from '../utils/utls.js';
 
-function createPointsTemplate(pointModel,iterator){
+function createPointsTemplate(pointModel,offerModel,destinationModel){
   const {
-    base_price: price,
-    date_from: dateFrom,
-    date_to: dateTo,
-    destination: destinationId,
-    is_favorite: isFavorite,
-    offers: offersId,
+    basePrice,
+    dateFrom,
+    dateTo,
+    destination,
+    isFavorite,
+    offers,
     type
-  } = pointModel.points[iterator];
+  } = pointModel;
 
   const pointOffers = [];
-  for(const offerId of offersId){
-    pointOffers.push(pointModel.getOfferById(type,offerId));
+  for(const offerId of offers){
+    pointOffers.push(offerModel.getOfferById(type,offerId));
   }
-  const {name} = pointModel.getDestinationById(destinationId);
+  const {name} = destinationModel.getDestinationById(destination);
   const date = humanizeDate(dateFrom);
   return `
             <li class="trip-events__item">
@@ -35,7 +35,7 @@ function createPointsTemplate(pointModel,iterator){
                   <p class="event__duration">${getDurationTime(dateFrom,dateTo)}</p>
                 </div>
                 <p class="event__price">
-                  &euro;&nbsp;<span class="event__price-value">${price}</span>
+                  &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
                 </p>
                 <h4 class="visually-hidden">Offers:</h4>
                 <ul class="event__selected-offers">
@@ -61,25 +61,26 @@ function createPointsTemplate(pointModel,iterator){
 `;
 }
 
-export default class Point{
+export default class PointView extends AbstractView{
+  pointModel;
+  #offerModel;
+  #destinationModel;
+  #rollupButton;
+  #favoriteButton;
 
-  constructor(model,i){
-    this.pointModel = model;
-    this.iterator = i;
+  constructor(pointModel,offerModel,destinationModel,onEditButtonClick,onFavoriteButtonClick){
+    super();
+    this.pointModel = pointModel;
+    this.#offerModel = offerModel;
+    this.#destinationModel = destinationModel;
+    this.#rollupButton = this.element.querySelector('.event__rollup-btn');
+    this.#favoriteButton = this.element.querySelector('.event__favorite-btn');
+    this.#rollupButton.addEventListener('click',onEditButtonClick);
+    this.#favoriteButton.addEventListener('click',()=>
+      onFavoriteButtonClick({...this.pointModel,isFavorite:!this.pointModel.isFavorite}));
   }
 
-  getTemplate(){
-    return createPointsTemplate(this.pointModel,this.iterator);
-  }
-
-  getElement(){
-    if(!this.element){
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
-  }
-
-  removeElement(){
-    this.element = null;
+  get template(){
+    return createPointsTemplate(this.pointModel,this.#offerModel,this.#destinationModel);
   }
 }
