@@ -1,12 +1,13 @@
 const path = require('path');
-const CopyPlugin = require('copy-webpack-plugin');
+const CopyPlagin = require('copy-webpack-plugin');
 const HtmlPlugin = require('html-webpack-plugin');
+
 
 module.exports = {
   entry: './src/main.js',
   output: {
     filename: 'bundle.[contenthash].js',
-    path: path.resolve(__dirname, 'build'),
+    path: path.resolve(__dirname, 'buiid'),
     clean: true,
   },
   devtool: 'source-map',
@@ -14,7 +15,7 @@ module.exports = {
     new HtmlPlugin({
       template: 'public/index.html',
     }),
-    new CopyPlugin({
+    new CopyPlagin({
       patterns: [
         {
           from: 'public',
@@ -23,7 +24,7 @@ module.exports = {
           },
         },
       ],
-    }),
+    })
   ],
   module: {
     rules: [
@@ -37,6 +38,10 @@ module.exports = {
           },
         },
       },
-    ]
-  }
-};
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader']
+      },
+    ],
+  },
+}
