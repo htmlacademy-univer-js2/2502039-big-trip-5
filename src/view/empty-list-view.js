@@ -1,23 +1,16 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { emptyListMessages } from '../const.js';
-function createEmptyListTemplate(actualFilter) {
+import { EmptyListMessage } from '../consts.js';
 
-  return `
-        <section class="trip-events">
-          <h2 class="visually-hidden">Trip events</h2>
-          <p class="trip-events__msg">${emptyListMessages[actualFilter]}</p>
-        </section>
-`;
-}
 
 export default class EmptyListView extends AbstractView {
-  #actualFilter;
-  constructor(actualFilter) {
+  #currentFilterType;
+
+  constructor(currentFilterType) {
     super();
-    this.#actualFilter = actualFilter;
+    this.#currentFilterType = currentFilterType;
   }
 
   get template() {
-    return createEmptyListTemplate(this.#actualFilter);
+    return `<p class="trip-events__msg">${EmptyListMessage[this.#currentFilterType]}</p>`;
   }
 }

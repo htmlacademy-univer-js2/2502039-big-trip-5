@@ -1,55 +1,53 @@
-import MainPresenter from './presenter/list-presenter.js';
+import PointListPresenter from './presenter/point-list-presenter.js';
 import FilterPresenter from './presenter/filter-presenter.js';
+import NewPointButtonPresenter from './presenter/new-point-button-presenter.js';
+import SortPresenter from './presenter/sort-presenter.js';
+import PointsListModel from './model/points-list-model.js';
 import FilterModel from './model/filter-model.js';
-import PointModel from './model/point-model.js';
-import OfferModel from './model/offer-model.js';
-import DestinationModel from './model/destination-model.js';
-import NewPointView from './view/new-point-view.js';
-import { render, RenderPosition } from './framework/render.js';
-import PointsApiService from './api/point-api-service.js';
-import OffersApiService from './api/offer-api-service.js';
-import DestinationsApiService from './api/destination-api-service.js';
+import SortModel from './model/sort-model.js';
+import TripInfoPresenter from './presenter/trip-info-presenter.js';
+import PointsApiService from './point-api-service.js';
+import { AUTHORIZATION, END_POINT } from './consts.js';
 
-const AUTHORIZATION = 'Basic ssj52f854f3h3v9f';
-const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
-const siteHeaderFiltersElement = document.querySelector('.trip-controls__filters');
-const siteBodySortElement = document.querySelector('.trip-events');
-const siteHeaderElement = document.querySelector('.trip-main');
+const tripMainContainer = document.querySelector('.trip-main');
+const tripEventsContainer = document.querySelector('.trip-events');
+const filterContainer = document.querySelector('.trip-controls__filters');
 
+const pointsListModel = new PointsListModel({ pointsApiService: new PointsApiService(END_POINT, AUTHORIZATION) });
 const filterModel = new FilterModel();
-const pointModel = new PointModel(new PointsApiService(END_POINT, AUTHORIZATION));
-const offerModel = new OfferModel(new OffersApiService(END_POINT, AUTHORIZATION));
-const destinationModel = new DestinationModel(new DestinationsApiService(END_POINT, AUTHORIZATION));
-const filterPresenter = new FilterPresenter(
-  siteHeaderFiltersElement,
-  filterModel,
-  pointModel
-);
-const mainPresenter = new MainPresenter(
-  siteBodySortElement,
-  pointModel,
-  offerModel,
-  destinationModel,
-  filterModel,
-  onNewPointFormClose
-);
+const sortModel = new SortModel();
 
-const newPointButtonComponent = new NewPointView(onNewPointButtonClick);
+new TripInfoPresenter({
+  containerElement: tripMainContainer,
+  pointsListModel: pointsListModel,
+}).init();
 
-function onNewPointFormClose() {
-  newPointButtonComponent.element.disabled = false;
-}
-
-function onNewPointButtonClick() {
-  mainPresenter.createPoint();
-  newPointButtonComponent.element.disabled = true;
-}
-filterPresenter.init();
-mainPresenter.init();
-Promise.all([
-  pointModel.init(),
-  offerModel.init(),
-  destinationModel.init()
-]).then(() => {
-  render(newPointButtonComponent, siteHeaderElement, RenderPosition.BEFOREEND);
+const newPointButtonPresenter = new NewPointButtonPresenter({
+  containerElement: tripMainContainer,
+  pointsListModel,
 });
+
+const pointsListPresenter = new PointListPresenter({
+  containerElement: tripEventsContainer,
+  filterModel,
+  sortModel,
+  pointsListModel,
+  newPointButtonPresenter,
+});
+
+new SortPresenter({
+  containerElement: tripEventsContainer,
+  sortModel,
+  pointsListModel,
+  filterModel,
+}).init();
+
+new FilterPresenter({
+  containerElement: filterContainer,
+  filterModel,
+  pointsListModel,
+}).init();
+
+newPointButtonPresenter.init({ buttonClickHandler: pointsListPresenter.newPointButtonClickHandler });
+pointsListPresenter.init();
+pointsListModel.init();
